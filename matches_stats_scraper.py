@@ -99,7 +99,6 @@ def load_matches_stats_csv():
         for row in csvdictreader: 
             # print(len(row), len(match_stats_csv_fields))
             if len(row) == len(match_stats_csv_fields):
-                print("true")
                 match_stats.append(row)
                 if row["match_url"] not in completed_matches_urls:
                     completed_matches_urls.append(row["match_url"])
@@ -118,11 +117,6 @@ def append_csv():
     with open("matches_stats.csv", "a", encoding="utf-8", newline="") as f:
         dictwriter = csv.DictWriter(f, fieldnames=match_stats_csv_fields)
         dictwriter.writerow(last_scraped_match_stats)
-    # except Exception as e:
-
-    #     print("FUCK - error in save_csv()")
-    #     print(e)
-    #     print("\n")
 
 def extract_map_team_stats(html : str):
     soup = BeautifulSoup(html, "html.parser")
@@ -144,11 +138,15 @@ def extract_map_team_stats(html : str):
 def extract_team_names_and_ids(html : str):
     soup = BeautifulSoup(html, "html.parser")
     teams = {}
-    teams["t1_name"] = soup.select("div.team-left a")[0]["href"].split("/")[-1]
+    teams["t1_name"] = soup.select("div.team-left a")[0]["href"].split("/")[-1].split("?")[0]
     teams["t1_id"] = soup.select("div.team-left a")[0]["href"].split("/")[-2]
-    teams["t2_name"] = soup.select("div.team-right a")[0]["href"].split("/")[-1]
+    teams["t2_name"] = soup.select("div.team-right a")[0]["href"].split("/")[-1].split("?")[0]
     teams["t2_id"] = soup.select("div.team-right a")[0]["href"].split("/")[-2]
     return teams
+
+# def format_hltv_date(hltv_date : str):
+#     day, month, year = hltv_date.split("/")
+#     return "-".join((f"20{year}", month.rjust(2,'0'), day.rjust(2,'0')))
 
 def extract_stats(match_url : str, match_date : str):
 
@@ -226,7 +224,7 @@ def scrape_matches_pages():
                     match_stats.append(last_scraped_match_stats:=extract_stats(url, matches_urls[url]))
                     completed_matches_urls.append(url)
                     num_matches_stats_scraped += 1
-                    save_full_csv()
+                    append_csv()
                     bar() 
 
         print(f"number of new/unique matches stats scraped: {num_match_stats_loaded} -> {len(match_stats)}")

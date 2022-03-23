@@ -19,11 +19,16 @@ def load_matches_urls_csv():
         matches_urls = {l.split(",")[0].strip():l.split(",")[1].strip() for l in f.readlines()[1:]}
     num_matches_loaded = len(matches_urls)
 
+
+def format_hltv_date(hltv_date : str):
+    day, month, year = hltv_date.split("/")
+    return "-".join((f"20{year}", month.rjust(2,'0'), day.rjust(2,'0')))
+
 def save_matches_urls_csv():
     with open("matches_urls.csv", "w") as f:
-        f.write("match_url, match_date\n")
+        f.write("match_url,match_date\n")
         for url in matches_urls:
-            f.write(f"{url}, {matches_urls[url]}\n")
+            f.write(f"{url},{matches_urls[url]}\n")
 
 def get_matches_urls(matches_page_html_text : str):
     global matches_urls
@@ -37,7 +42,7 @@ def get_matches_urls(matches_page_html_text : str):
     # before = len(matches_urls)
     for entry in match_list:
         match_url = entry.select("td.date-col")[0].select("a")[0]["href"]
-        match_date = entry.select("td.date-col")[0].select("a")[0].select("div.time")[0].text
+        match_date = format_hltv_date(entry.select("td.date-col")[0].select("a")[0].select("div.time")[0].text)
         matches_urls[match_url] = match_date
         
 
@@ -55,6 +60,7 @@ def crawl(num_matches):
     for offset in alive_it(range(0, num_matches, 50)):
         html = get_matches_page_html(offset=offset)
         get_matches_urls(html)
+        save_matches_urls_csv()
 
 
 load_matches_urls_csv()
