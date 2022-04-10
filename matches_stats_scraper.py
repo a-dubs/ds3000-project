@@ -90,15 +90,19 @@ last_scraped_match_stats = {}  # for debug purposes only
 def load_matches_stats_csv():
     global completed_matches_urls, num_match_stats_loaded, match_stats
     # load previously stored match stats
-    with open("matches_stats.csv", "r", encoding="utf-8") as f:
+    with open("all_matches_stats.csv", "r+", encoding="utf-8") as f:
         if len(list(f.readlines())) <= 2:
             print("EMPTY CSV FUCKK")
+            dictwriter = csv.DictWriter(f, fieldnames=match_stats_csv_fields)
+            dictwriter.writeheader()
             return
-    with open("matches_stats.csv", "r", encoding="utf-8") as f:
+    with open("all_matches_stats.csv", "r", encoding="utf-8") as f:
         csvdictreader = csv.DictReader(f, delimiter=',') 
         for row in csvdictreader: 
             # print(len(row), len(match_stats_csv_fields))
             if len(row) == len(match_stats_csv_fields):
+                if "?rankingFilter=Top30" in row["match_url"]:
+                    row["match_url"] = row["match_url"].replace("?rankingFilter=Top30","")
                 match_stats.append(row)
                 if row["match_url"] not in completed_matches_urls:
                     completed_matches_urls.append(row["match_url"])
@@ -107,14 +111,14 @@ def load_matches_stats_csv():
 
 def save_full_csv():
     # try:
-    with open("matches_stats.csv", "w", encoding="utf-8", newline="") as f:
+    with open("all_matches_stats.csv", "w", encoding="utf-8", newline="") as f:
         dictwriter = csv.DictWriter(f, fieldnames=match_stats_csv_fields)
         dictwriter.writeheader()
         dictwriter.writerows(match_stats)
 
 def append_csv():
     # try:
-    with open("matches_stats.csv", "a", encoding="utf-8", newline="") as f:
+    with open("all_matches_stats.csv", "a", encoding="utf-8", newline="") as f:
         dictwriter = csv.DictWriter(f, fieldnames=match_stats_csv_fields)
         dictwriter.writerow(last_scraped_match_stats)
 
@@ -160,9 +164,11 @@ def extract_stats(match_url : str, match_date : str):
         r = requests.get(match_url)
         if is_valid_match_page(r.text):
             break
-        print(r.text)
-        input()
-        time.sleep(10)
+        print("WE GOT RATE LIMITED D:", end="")
+        # print(r.text)
+        # input()
+        time.sleep(120)
+        print(" trying again")
 
     tables = get_teams_stats_table(r.text)
     team1_player_stats, team2_player_stats = get_player_stats(tables[0]) , get_player_stats(tables[1])
