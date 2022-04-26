@@ -69,12 +69,16 @@ def crawl(num_matches, starting_offset):
 
 load_matches_urls_csv()
 
-num_match_urls_to_get = 70000
 # num_match_urls_to_get = input("How many total match urls do you want to fetch? ")
 # last_page_no = input("What page number did you get to last? ") 
 # last_page_no = 0 if last_page_no == "" else int(last_page_no) 
+
+num_match_urls_to_get = 80000
 with open("crawler_last_page_no.txt","r") as f:
     last_page_no = int(f.read())
+
+# last_page_no = 0
+num_match_urls_to_get = 0
 
 if num_match_urls_to_get and (num_match_urls_to_get:=int(num_match_urls_to_get)) > 0:
 

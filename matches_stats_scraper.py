@@ -227,11 +227,15 @@ def scrape_matches_pages():
                 if num_matches_stats_scraped >= num_matches_stats_to_scrape:
                     break
                 if not url in completed_matches_urls: 
-                    match_stats.append(last_scraped_match_stats:=extract_stats(url, matches_urls[url]))
-                    completed_matches_urls.append(url)
-                    num_matches_stats_scraped += 1
-                    append_csv()
-                    bar() 
+                    if matches_urls[url] > "2017-08-01":
+
+                        match_stats.append(last_scraped_match_stats:=extract_stats(url, matches_urls[url]))
+                        completed_matches_urls.append(url)
+                        num_matches_stats_scraped += 1
+                        append_csv()
+                        bar() 
+                    # else:
+                    #     print("old match ignored")
 
         print(f"number of new/unique matches stats scraped: {num_match_stats_loaded} -> {len(match_stats)}")
 
