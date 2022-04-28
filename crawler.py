@@ -5,12 +5,10 @@ import os
 import csv 
 import time
 
-
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 matches_urls = {}
 num_matches_loaded = 0
-
 
 def load_matches_urls_csv():
     global matches_urls, num_matches_loaded
@@ -30,8 +28,6 @@ def save_matches_urls_csv():
         for url in matches_urls:
             f.write(f"{url},{matches_urls[url]}\n")
     
-
-
 def get_matches_urls(matches_page_html_text : str):
     global matches_urls
     match_list = []
@@ -47,16 +43,11 @@ def get_matches_urls(matches_page_html_text : str):
         match_date = format_hltv_date(entry.select("td.date-col")[0].select("a")[0].select("div.time")[0].text)
         matches_urls[match_url] = match_date
         
-
 def get_matches_page_html(offset : int = 0) -> str:
     # round down to interval of 50
-    # offset = offset - (offset % 50)
     url=f"https://www.hltv.org/stats/matches?offset={offset}"
     response = requests.get(url)
-    # with open("site.html", "w") as f:
-    #     f.write(html_txt:=response.text)
     return response.text
-
 
 def crawl(num_matches, starting_offset):
     for query_offset in alive_it(range(0, num_matches, 50)):
@@ -81,9 +72,6 @@ with open("crawler_last_page_no.txt","r") as f:
 num_match_urls_to_get = 0
 
 if num_match_urls_to_get and (num_match_urls_to_get:=int(num_match_urls_to_get)) > 0:
-
     crawl(num_match_urls_to_get, last_page_no*50)
-
     print(f"number of matches_urls: {num_matches_loaded} -> {len(matches_urls)}")
-
     save_matches_urls_csv()

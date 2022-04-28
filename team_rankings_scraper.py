@@ -6,12 +6,6 @@ import csv
 from datetime import datetime, timedelta
 import re
 
-# to scrape 
-# team's stats for maps - rip data week by week: (https://www.hltv.org/stats/teams/maps/5995/g2?startDate=2022-02-06&endDate=2022-03-06)
-# top 30 rankings each day / week (https://www.hltv.org/ranking/teams/2022/january/31)  
-# only scrape matches after June 6, 2017
-# maybe event track records for each team? (https://www.hltv.org/stats/teams/events/5995/g2?startDate=all)
-# to get only top 30: https://www.hltv.org/stats/matches?startDate=all&offset=13000&rankingFilter=Top30
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 hltv_base_url = "https://www.hltv.org"
@@ -39,7 +33,7 @@ def load_csv():
         # scraped_urls = [l.strip() for l in f.readlines()]
     with open("team_rankings.csv", "r", encoding="utf-8") as f:
         if len(list(f.readlines())) <= 2:
-            print("EMPTY CSV FUCKK")
+            print("EMPTY CSV")
             return
     with open("team_rankings.csv", "r", encoding="utf-8") as f:
         csvreader = csv.reader(f, delimiter=',') 
@@ -95,7 +89,7 @@ def scrape_team_rankings(url : str) -> list[str]:
 
     if not is_valid_page(html:=r.text):
         if "<h1>404</h1>" in html and '<div class="error-desc">Page not found</div>' in html:
-            print("date got fucked up somehow...")
+            print("date got messed up somehow...")
             print(url)
             return []
         print("they rate limited my ass D:")
@@ -125,10 +119,6 @@ def scrape_and_crawl_team_rankings():
         with alive_bar(weeks_to_scrape, bar="filling", length=30, title="Scraping Matches Pages") as bar:
             for week_n in range(0, weeks_to_scrape):
                 dt_it, dt_batch, week_url = get_next_week(dt_it)
-                # print(dt_it)
-                # print(dt_batch)
-                # print(week_url)
-                # print("\n\n")
                 if week_url not in scraped_urls:
                     scraped_urls.append(week_url)
                     ranking_data = []
@@ -151,12 +141,5 @@ def scrape_and_crawl_team_rankings():
                 bar()
 
         print(f"Days of rankings scraped: {nums_days_loaded} -> {len(team_rankings_each_day)}")
-
-# print(get_datetimes_between_dates( datetime.now() + timedelta(days=7), datetime.now()))
-# print(parse_date_from_url("https://www.hltv.org/ranking/teams/2022/march/7"))
-# print(get_next_week(datetime(datetime.now().year, datetime.now().month, datetime.now().day) + timedelta(days=1)))
-# save_csv()
-
-
 
 scrape_and_crawl_team_rankings()

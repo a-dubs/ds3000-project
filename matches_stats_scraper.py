@@ -7,16 +7,8 @@ import os
 # import time
 from crawler import *
 
-# to scrape 
-# team's stats for maps - rip data week by week: (https://www.hltv.org/stats/teams/maps/5995/g2?startDate=2022-02-06&endDate=2022-03-06)
-# top 30 rankings each day / week (https://www.hltv.org/ranking/teams/2022/january/31)
-# only scrape matches after June 6, 2017
-# maybe event track records for each team? (https://www.hltv.org/stats/teams/events/5995/g2?startDate=all)
-# to get only top 30: https://www.hltv.org/stats/matches?startDate=all&offset=13000&rankingFilter=Top30
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 hltv_base_url = "https://www.hltv.org"
-
-
 
 match_stats_csv_fields = [
     "match_url", "match_date", "map",
@@ -42,7 +34,7 @@ match_stats_csv_fields = [
     "t2p4_hskills", "t2p4_assists", "t2p4_fassists", "t2p4_deaths", "t2p4_kdratio", "t2p4_kddiff", "t2p4_adr", 
     "t2p4_fkdiff", "t2p4_rating", "t2p5_player", "t2p5_kills", "t2p5_hskills", "t2p5_assists", "t2p5_fassists", 
     "t2p5_deaths", "t2p5_kdratio", "t2p5_kddiff", "t2p5_adr", "t2p5_fkdiff", "t2p5_rating"
-    ]
+]
 
 def is_valid_match_page(html : str) -> bool:
     soup = BeautifulSoup(html, "html.parser")
@@ -92,7 +84,7 @@ def load_matches_stats_csv():
     # load previously stored match stats
     with open("all_matches_stats.csv", "r+", encoding="utf-8") as f:
         if len(list(f.readlines())) <= 2:
-            print("EMPTY CSV FUCKK")
+            print("EMPTY CSV")
             dictwriter = csv.DictWriter(f, fieldnames=match_stats_csv_fields)
             dictwriter.writeheader()
             return
@@ -148,14 +140,8 @@ def extract_team_names_and_ids(html : str):
     teams["t2_id"] = soup.select("div.team-right a")[0]["href"].split("/")[-2]
     return teams
 
-# def format_hltv_date(hltv_date : str):
-#     day, month, year = hltv_date.split("/")
-#     return "-".join((f"20{year}", month.rjust(2,'0'), day.rjust(2,'0')))
-
 def extract_stats(match_url : str, match_date : str):
-
     stats = {"match_url": match_url, "match_date": match_date}
-
     # if only given a uri, turn into full url
     if not "http" in match_url:
         match_url = hltv_base_url + match_url
@@ -186,9 +172,6 @@ def extract_stats(match_url : str, match_date : str):
             t2_pstats[f"t2p{pn}_{variable}"] = pstats[variable]
 
     t1_map_stats, t2_map_stats, map_name = extract_map_team_stats(r.text)   
-    
-    # print(t1_map_stats)
-    # print(t2_map_stats)
     teams_info = extract_team_names_and_ids(r.text)
 
     stats["map"] = map_name
@@ -197,20 +180,6 @@ def extract_stats(match_url : str, match_date : str):
     stats.update(t1_map_stats)
     stats.update(t2_map_stats)
     stats.update(teams_info)
-
-    # print(stats)
-    # print("NUM OF STATS EXTRACTED:", len(stats))
-
-
-
-    
-    # print("".join([f"\n{tuple[0]} : {tuple[1]}, " if "player" in tuple[0] else f"{tuple[0]} : {tuple[1]}, " 
-    #     for tuple in player_stats]))
-    # try:
-    #     save_csv()
-    # except:
-    #     print(r.text)
-    #     print(stats)
 
     return stats
 
@@ -228,22 +197,13 @@ def scrape_matches_pages():
                     break
                 if not url in completed_matches_urls: 
                     if matches_urls[url] > "2017-08-01":
-
                         match_stats.append(last_scraped_match_stats:=extract_stats(url, matches_urls[url]))
                         completed_matches_urls.append(url)
                         num_matches_stats_scraped += 1
                         append_csv()
                         bar() 
-                    # else:
-                    #     print("old match ignored")
 
         print(f"number of new/unique matches stats scraped: {num_match_stats_loaded} -> {len(match_stats)}")
 
 
 scrape_matches_pages()
-
-# print(extract_team_names_and_ids(requests.get("https://www.hltv.org/stats/matches/mapstatsid/134406/faze-vs-g2").text))
-# print(s:=extract_stats("https://www.hltv.org/stats/matches/mapstatsid/134406/faze-vs-g2", "27/2/22"))
-# 
-# print(len(s) == len(match_stats_csv_fields))
-
